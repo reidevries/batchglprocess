@@ -9,6 +9,6 @@ where framerate is the framerate at which the frames will be generated, and fold
 ideal command to convert frames to a video:
  ffmpeg -framerate 30 -i out/%05d.png video.MOV
 
-Requires raylib (included) and C++17 filesystem header. 
+Requires raylib and C++17 filesystem header. Get raylib from https://github.com/raysan5/raylib/ or ur local linux distro's repositories.
 
 I plan to make this more easy to use and powerful in the future, with more example shaders, and with a preprocessor to add the supporting GLSL functions to any input shader. Also might add a GUI using raygui.

@@ -115,7 +115,7 @@ std::vector<Image> processTextures(
 		UnloadTexture(processed_previous);
 		UnloadTexture(processed_older);
 
-		SetShaderValue(s, GetShaderLocation(s, "progress"), &log_index, UNIFORM_INT);
+		SetShaderValue(s, GetShaderLocation(s, "progress"), &log_index, SHADER_UNIFORM_INT);
 
 		//now apply the shader and render to target texture
 		BeginTextureMode(target);
@@ -281,7 +281,7 @@ void processArgs(int argc, char* argv[]) {
 }
 
 int main(int argc, char* argv[]) {
-	std::cout << argv[0] << " by Rei de Vries June 2020" << std::endl;
+	std::cout << argv[0] << " by Rei de Vries August 2021" << std::endl;
 	processArgs(argc, argv);
 
 	//only show warning messages, not every debug message
@@ -292,7 +292,7 @@ int main(int argc, char* argv[]) {
 	
 	//load the shader and set its resolution variable
 	Shader s = LoadShader("shaders/base.vert", shader_path.c_str());
-	SetShaderValue(s, GetShaderLocation(s, "resolution"), &resolution, UNIFORM_VEC2);
+	SetShaderValue(s, GetShaderLocation(s, "resolution"), &resolution, SHADER_UNIFORM_VEC2);
 
 	//variables for storing textures and image pairs
 	std::vector<std::pair<Texture2D, Texture2D>> tex_buf;
@@ -343,8 +343,8 @@ int main(int argc, char* argv[]) {
 		cur_image_bg = LoadImage(bg_paths[index%bg_paths.size()].c_str());
 
 		//format images to 32 bit uncompressed
-		ImageFormat(&cur_image_fg, UNCOMPRESSED_R8G8B8A8);
-		ImageFormat(&cur_image_bg, UNCOMPRESSED_R8G8B8A8);
+		ImageFormat(&cur_image_fg, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+		ImageFormat(&cur_image_bg, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
 		//upload images to gpu and place them in the texture buffer
 		tex_buf.push_back(
 			std::pair<Texture2D, Texture2D>(

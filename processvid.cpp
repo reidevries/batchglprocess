@@ -9,6 +9,7 @@
 #include <iomanip>
 #include <getopt.h>
 #include <filesystem>
+#include <fstream>
 #include <algorithm>
 
 Vector2 res = {1280,720};
@@ -17,7 +18,9 @@ std::string input_dir_bg = "in_bg/";
 std::string output_dir = "out/";
 std::string out_filetype = "png";
 std::string in_filetype = "png";
-std::string shader_path = "shaders/base.frag";
+std::string frag_path = "shaders/base.frag";
+std::string vert_path = "shaders/base.vert";
+std::string func_path = "shaders/useful_functions.frag";
 int digit_num = 5;
 bool swap_fg_bg = false;
 bool preview_mode = false;
@@ -270,8 +273,8 @@ void process_args(int argc, char* argv[]) {
 				}
 				break;
 			case 's':
-				shader_path = optarg;
-				if (shader_path[shader_path.size()-1] == '/') {
+				frag_path = optarg;
+				if (frag_path[frag_path.size()-1] == '/') {
 					std::cout << "u specified a directory, "
 						<< "pls specify the frag shader filename instead"
 						<< std::endl;
@@ -312,6 +315,20 @@ void process_args(int argc, char* argv[]) {
 	}
 }
 
+auto read_file(std::string& path) -> std::string {
+    constexpr auto read_size = std::size_t{4096};
+    auto stream = std::ifstream{path};
+    stream.exceptions(std::ios_base::badbit);
+
+    auto out = std::string{};
+    auto buf = std::string(read_size, '\0');
+    while (stream.read(& buf[0], read_size)) {
+        out.append(buf, 0, stream.gcount());
+    }
+    out.append(buf, 0, stream.gcount());
+    return out;
+}
+
 int main(int argc, char* argv[])
 {
 	std::cout << argv[0] << " by Rei de Vries August 2021" << std::endl;
@@ -324,8 +341,16 @@ int main(int argc, char* argv[])
 	InitWindow(res.x, res.y, "processing video frames...");
 
 	//load the shader and set its res variable
-	Shader s = LoadShader("shaders/base.vert", shader_path.c_str());
-	SetShaderValue(s, GetShaderLocation(s, "res"), &res, SHADER_UNIFORM_VEC2);
+	auto vert = read_file(vert_path);
+	auto frag = read_file(func_path) + read_file(frag_path);
+
+	Shader s = LoadShaderFromMemory(vert.c_str(), frag.c_str());
+	SetShaderValue(
+		s,
+		GetShaderLocation(s, "resolution"),
+		&res,
+		SHADER_UNIFORM_VEC2
+	);
 
 	//variables for storing textures and image pairs
 	std::vector<std::pair<Texture2D, Texture2D>> tex_buf;

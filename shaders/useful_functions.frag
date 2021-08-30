@@ -1,3 +1,22 @@
+#version 330
+
+// Input vertex attributes (from vertex shader)
+in vec2 fragTexCoord;
+in vec4 fragColor;
+
+// Input uniform values
+uniform sampler2D texture0;
+
+uniform vec4 colDiffuse;
+uniform vec2 resolution;
+
+//progress, in frames
+uniform int progress;
+
+// Output fragment color
+out vec4 finalColor;
+
+
 /// calculates a bell curve that always has a max at 1
 float bell(in float x, in float width, in float centre) {
 	return exp(-pow((x-centre)/width, 2)/2);
@@ -76,9 +95,8 @@ vec3 sobel(in vec2 coord, in vec2 window, in float spread) {
 	mat3 I;
 	for (int i=0; i<3; i++) {
         for (int j=0; j<3; j++) {
-			vec2 samp_coord
-				= windowCoord(coord + vec2(i-1,j-1)*spread/resolution, window);
-            vec3 samp  = texture(texture0, samp_coord).rgb;
+			vec2 samp_coord = vec2(i-1,j-1)*spread + coord;
+            vec3 samp  = texture(texture0, windowCoord(samp_coord,window)).rgb;
             I[i][j] = length(samp);
 		}
 	}

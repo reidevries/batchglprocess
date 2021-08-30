@@ -11,7 +11,7 @@
 #include <filesystem>
 #include <algorithm>
 
-Vector2 resolution = {1280,720};
+Vector2 res = {1280,720};
 std::string input_dir_fg = "in_fg/";
 std::string input_dir_bg = "in_bg/";
 std::string output_dir = "out/";
@@ -31,9 +31,11 @@ namespace fs = std::filesystem;
  * filetype suffix.
  */
 
-std::string getFileName(std::string dir,
-		int index,
-		std::string filetype) {
+std::string getFileName(
+	std::string dir,
+	int index,
+	std::string filetype)
+{
 	std::stringstream filename;
 	filename << dir;
 	filename << std::setfill('0') << std::setw(digit_num) << index;
@@ -47,15 +49,16 @@ std::string getFileName(std::string dir,
  * starting_index is for log messages.
  */
 std::vector<Image> processTextures(
-		std::vector<std::pair<Texture2D,Texture2D>> tex_buf,
-		std::pair<Texture2D,Texture2D> last_batch_pair,
-		std::vector<Image> out_buf,
-		Shader s,
-		int starting_index) {
+	std::vector<std::pair<Texture2D,Texture2D>> tex_buf,
+	std::pair<Texture2D,Texture2D> last_batch_pair,
+	std::vector<Image> out_buf,
+	Shader s,
+	int starting_index)
+{
 
 	// Create a RenderTexture2D to use as a canvas
-    RenderTexture2D sampler = LoadRenderTexture(resolution.x*2, resolution.y*3);
-	RenderTexture2D target = LoadRenderTexture(resolution.x, resolution.y);
+    RenderTexture2D sampler = LoadRenderTexture(res.x*2, res.y*3);
+	RenderTexture2D target = LoadRenderTexture(res.x, res.y);
 	
 	//iterate through all the textures in the vector
 	int log_index = starting_index;
@@ -65,9 +68,12 @@ std::vector<Image> processTextures(
 	Texture2D processed_previous = tex_buf.front().first;
 	Texture2D processed_older = tex_buf.front().second;
 
-	std::cout << "processing inputs " << starting_index << " to " << (starting_index+tex_buf.size()) << std::endl;
+	std::cout << "processing inputs " << starting_index
+		<< " to " << (starting_index+tex_buf.size()) << std::endl;
 	for (auto it = tex_buf.begin(); it != tex_buf.end(); ++it) {
-		std::cout << "\tprocessing " << std::setfill('0') << std::setw(digit_num) << log_index << "/" << out_buf.size() << "... " << std::endl;
+		std::cout << "\tprocessing "
+			<< std::setfill('0') << std::setw(digit_num) << log_index
+			<< "/" << out_buf.size() << "... " << std::endl;
 
 		if (swap_fg_bg) {
 			fg = it->second;
@@ -88,9 +94,11 @@ std::vector<Image> processTextures(
 
 		if (out_buf.size() > 1) {
 			processed_previous = LoadTextureFromImage(*(out_buf.end()-1));
-			//if num_frames_back > out.size, return the texture using modulo operation
+			//if num_frames_back > out.size,
+			//return the texture using modulo operation
 			if (out_buf.size() > num_frames_back) {
-				processed_older = LoadTextureFromImage(*(out_buf.end()-1-num_frames_back));
+				processed_older
+					= LoadTextureFromImage(*(out_buf.end()-1-num_frames_back));
 			} else processed_older = LoadTextureFromImage(out_buf.back());
 		}
 
@@ -103,19 +111,24 @@ std::vector<Image> processTextures(
 		 */
 		BeginTextureMode(sampler);
 			ClearBackground(WHITE);
-			DrawTexture(fg, 				0, 				0, 				WHITE);
-			DrawTexture(fg_previous, 		resolution.x, 	0, 				WHITE);
-			DrawTexture(bg, 				0, 				resolution.y, 	WHITE);
-			DrawTexture(bg_previous,		resolution.x,	resolution.y,	WHITE);
-			DrawTexture(processed_previous,	0,				resolution.y*2,	WHITE);
-			DrawTexture(processed_older,	resolution.x,	resolution.y*2,	WHITE);
+			DrawTexture(fg, 				0, 		0, 			WHITE);
+			DrawTexture(fg_previous, 		res.x, 	0, 			WHITE);
+			DrawTexture(bg, 				0, 		res.y,		WHITE);
+			DrawTexture(bg_previous,		res.x,	res.y,		WHITE);
+			DrawTexture(processed_previous,	0,		res.y*2,	WHITE);
+			DrawTexture(processed_older,	res.x,	res.y*2,	WHITE);
 		EndTextureMode();
 		
 		//unload the temporary textures
 		UnloadTexture(processed_previous);
 		UnloadTexture(processed_older);
 
-		SetShaderValue(s, GetShaderLocation(s, "progress"), &log_index, SHADER_UNIFORM_INT);
+		SetShaderValue(
+			s,
+			GetShaderLocation(s, "progress"),
+			&log_index,
+			SHADER_UNIFORM_INT
+		);
 
 		//now apply the shader and render to target texture
 		BeginTextureMode(target);
@@ -143,7 +156,8 @@ std::vector<Image> processTextures(
 }
 
 /*saves and unloads a vector of textures to output_dir*/
-void saveTextures(std::vector<Image> out_buf, int starting_index) {
+void saveTextures(std::vector<Image> out_buf, int starting_index)
+{
 	if (!preview_mode) {
 	std::cout << "saving images:" << std::endl;
 
@@ -162,14 +176,17 @@ void saveTextures(std::vector<Image> out_buf, int starting_index) {
 }
 
 /*unload all the textures in the given buffer*/
-void unloadTextures(std::vector<std::pair<Texture2D, Texture2D>> tex_buf) {
+void unloadTextures(std::vector<std::pair<Texture2D, Texture2D>> tex_buf)
+{
 	for (auto it : tex_buf) {
 		UnloadTexture(it.first);
 		UnloadTexture(it.second);
 	}
 }
 
-void unloadAllButLastTexture(std::vector<std::pair<Texture2D, Texture2D>> tex_buf) {
+void unloadAllButLastTexture(
+	std::vector<std::pair<Texture2D, Texture2D>> tex_buf)
+{
 	for (auto it = tex_buf.begin(); it != tex_buf.end()-1; ++it) {
 		UnloadTexture(it->first);
 		UnloadTexture(it->second);
@@ -214,36 +231,50 @@ void processArgs(int argc, char* argv[]) {
 	/* getopt_long stores the option index here. */
 	int option_index = 0;
 	int c;
-	while ((c = getopt_long(argc, argv, "a:b:o:s:f:n:d:w:h:cp", long_options, &option_index)) != -1) {
+	while (
+		(c = getopt_long(
+			argc,
+			argv,
+			"a:b:o:s:f:n:d:w:h:cp",
+			long_options,
+			&option_index)
+		) != -1)
+	{
 		switch (c) {
 			case 0:
-				std::cout << "idk what this means, something's funny with ur args" << std::endl;
+				std::cout << "idk what this means, something's funny with "
+					<< " ur args" << std::endl;
 				break;
 			case 'a':
 				input_dir_fg = optarg;
 				if (input_dir_fg[input_dir_fg.size()-1] != '/') {
-					std::cout << "u specified a file, not a directory. pls try again" << std::endl;
+					std::cout << "u specified a file, not a directory."
+						<< " pls try again" << std::endl;
 					abort();
 				}
 				break;
 			case 'b':
 				input_dir_bg = optarg;
 				if (input_dir_bg[input_dir_bg.size()-1] != '/') {
-					std::cout << "u specified a file, not a directory. pls try again" << std::endl;
+					std::cout << "u specified a file, not a directory. "
+						<< "pls try again" << std::endl;
 					abort();
 				}
 				break;
 			case 'o':
 				output_dir = optarg;
 				if (output_dir[output_dir.size()-1] != '/') {
-					std::cout << "u specified a file, not a directory. pls try again" << std::endl;
+					std::cout << "u specified a file, not a directory. "
+						<< "pls try again" << std::endl;
 					abort();
 				}
 				break;
 			case 's':
 				shader_path = optarg;
 				if (shader_path[shader_path.size()-1] == '/') {
-					std::cout << "u specified a directory, pls specify the frag shader filename instead" << std::endl;
+					std::cout << "u specified a directory, "
+						<< "pls specify the frag shader filename instead"
+						<< std::endl;
 					abort();
 				}
 				break;
@@ -258,10 +289,10 @@ void processArgs(int argc, char* argv[]) {
 				num_frames_back = std::stoi(optarg);
 				break;
 			case 'w':
-				resolution.x = std::stoi(optarg);
+				res.x = std::stoi(optarg);
 				break;
 			case 'h':
-				resolution.y = std::stoi(optarg);
+				res.y = std::stoi(optarg);
 				break;
 			case 'c':
 				swap_fg_bg = true;
@@ -269,7 +300,8 @@ void processArgs(int argc, char* argv[]) {
 				break;
 			case 'p':
 				preview_mode = true;
-				std::cout << "running in preview mode - no saving images" << std::endl;
+				std::cout << "running in preview mode - no saving images"
+					<< std::endl;
 				break;
 			case '?':
 			  break;
@@ -288,17 +320,18 @@ int main(int argc, char* argv[]) {
 	SetTraceLogLevel(LOG_WARNING);
 
 	//initialize window with raylib
-	InitWindow(resolution.x, resolution.y, "processing video frames...");
+	InitWindow(res.x, res.y, "processing video frames...");
 
-	//load the shader and set its resolution variable
+	//load the shader and set its res variable
 	Shader s = LoadShader("shaders/base.vert", shader_path.c_str());
-	SetShaderValue(s, GetShaderLocation(s, "resolution"), &resolution, SHADER_UNIFORM_VEC2);
+	SetShaderValue(s, GetShaderLocation(s, "res"), &res, SHADER_UNIFORM_VEC2);
 
 	//variables for storing textures and image pairs
 	std::vector<std::pair<Texture2D, Texture2D>> tex_buf;
 	std::vector<Image> out_buf; //stored in main memory, not gpu memory
 	Image cur_image_fg, cur_image_bg;
-	std::pair<Texture2D, Texture2D> last_batch_pair; //stores the last frames from the last batch
+	//stores the last frames from the last batch
+	std::pair<Texture2D, Texture2D> last_batch_pair;
 
 	//iterator for image filenames
 	int index = 0;
@@ -309,14 +342,16 @@ int main(int argc, char* argv[]) {
 	//load images in the input folders
 	std::vector<std::string> fg_paths;
 	std::vector<std::string> bg_paths;
-	std::cout << "scanning foregrounds in " << input_dir_fg << ": " << std::endl;
+	std::cout << "scanning foregrounds in " << input_dir_fg
+		<< ": " << std::endl;
 	for (auto& p: fs::directory_iterator(input_dir_fg)) {
 		if (p.path().extension().compare(".png") == 0) {
 			fg_paths.push_back(p.path().string());
 		}
 	}
 	std::cout << "loaded " << fg_paths.size() << " foregrounds" << std::endl;
-	std::cout << "scanning backgrounds in " << input_dir_bg << ": " << std::endl;
+	std::cout << "scanning backgrounds in " << input_dir_bg
+		<< ": " << std::endl;
 	for (auto& p: fs::directory_iterator(input_dir_bg)) {
 		if (p.path().extension().compare(".png") == 0) {
 			bg_paths.push_back(p.path().string());
@@ -327,15 +362,19 @@ int main(int argc, char* argv[]) {
 	std::sort(fg_paths.begin(), fg_paths.end());
 	std::sort(bg_paths.begin(), bg_paths.end());
 
-	std::cout << "beginning processing with batch size " << batch_size << "..." << std::endl;
+	std::cout << "beginning processing with batch size " << batch_size
+		<< "..." << std::endl;
 	//check the number of frames
 	if (fg_paths.size() < bg_paths.size()) {
-		std::cout << " there are more background frames than foreground frames, " << std::endl
-				<< " algorithm will stop processing after running out of foreground frames"
-				<< std::endl;
+		std::cout << " there are more background frames than foreground frames,"
+			<< std::endl
+			<< " algorithm will stop processing after running out "
+			<< "of foreground frames" << std::endl;
 	} else if (fg_paths.size() > bg_paths.size()) {
-		std::cout << " there are more foreground frames than background frames, " << std::endl
-				<< " background will loop to beginning when frames run out" << std::endl;
+		std::cout << " there are more foreground frames than background frames,"
+			<< std::endl
+			<< " background will loop to beginning when frames run out"
+			<< std::endl;
 	}
 
 	while (access(fg_paths[index].c_str(), R_OK) != -1 ) {
@@ -359,13 +398,20 @@ int main(int argc, char* argv[]) {
 		//batch process the texture buffer if we exceeded the maximum size
 		if (tex_buf.size() >= batch_size) {
 			if (last_saved_index == 0) last_batch_pair = tex_buf[0];
-			out_buf = processTextures(tex_buf, last_batch_pair, out_buf, s, last_saved_index);
+			out_buf = processTextures(
+				tex_buf,
+				last_batch_pair,
+				out_buf,
+				s,
+				last_saved_index
+			);
 			saveTextures(out_buf, last_saved_index);
 			unloadAllButLastTexture(tex_buf);
 			last_batch_pair = tex_buf.back();
 			tex_buf.clear();
 			last_saved_index = index+1;
-			std::cout << "batch processed " << batch_size << " frames" << std::endl << std::endl;
+			std::cout << "batch processed " << batch_size << " frames"
+				<< std::endl << std::endl;
 		}
 		++image_i;
 		++bg_image_i;
@@ -374,7 +420,13 @@ int main(int argc, char* argv[]) {
 
 	std::cout << std::endl;
 	if (last_saved_index == 0) last_batch_pair = tex_buf[0];
-	out_buf = processTextures(tex_buf, last_batch_pair, out_buf, s, last_saved_index);
+	out_buf = processTextures(
+		tex_buf,
+		last_batch_pair,
+		out_buf,
+		s,
+		last_saved_index
+	);
 	saveTextures(out_buf, last_saved_index);
 	for (auto out_tex : out_buf) UnloadImage(out_tex);
 	unloadTextures(tex_buf);

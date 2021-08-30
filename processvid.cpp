@@ -31,7 +31,7 @@ namespace fs = std::filesystem;
  * filetype suffix.
  */
 
-std::string getFileName(
+std::string get_file_name(
 	std::string dir,
 	int index,
 	std::string filetype)
@@ -48,7 +48,7 @@ std::string getFileName(
  * num_frames_back is how many frames ago "processed_older" is taken from
  * starting_index is for log messages.
  */
-std::vector<Image> processTextures(
+std::vector<Image> process_textures(
 	std::vector<std::pair<Texture2D,Texture2D>> tex_buf,
 	std::pair<Texture2D,Texture2D> last_batch_pair,
 	std::vector<Image> out_buf,
@@ -156,7 +156,7 @@ std::vector<Image> processTextures(
 }
 
 /*saves and unloads a vector of textures to output_dir*/
-void saveTextures(std::vector<Image> out_buf, int starting_index)
+void save_textures(std::vector<Image> out_buf, int starting_index)
 {
 	if (!preview_mode) {
 	std::cout << "saving images:" << std::endl;
@@ -164,7 +164,7 @@ void saveTextures(std::vector<Image> out_buf, int starting_index)
 	unsigned int log_index = starting_index;
 	std::string filename;
 	for (auto it = out_buf.begin()+starting_index; it != out_buf.end(); ++it) {
-		filename = getFileName(output_dir, log_index, out_filetype);
+		filename = get_file_name(output_dir, log_index, out_filetype);
 		std::cout << "\tsaving image to filename " << filename << std::endl;
 
 		Image image = *it;
@@ -176,7 +176,7 @@ void saveTextures(std::vector<Image> out_buf, int starting_index)
 }
 
 /*unload all the textures in the given buffer*/
-void unloadTextures(std::vector<std::pair<Texture2D, Texture2D>> tex_buf)
+void unload_textures(std::vector<std::pair<Texture2D, Texture2D>> tex_buf)
 {
 	for (auto it : tex_buf) {
 		UnloadTexture(it.first);
@@ -184,7 +184,7 @@ void unloadTextures(std::vector<std::pair<Texture2D, Texture2D>> tex_buf)
 	}
 }
 
-void unloadAllButLastTexture(
+void unload_all_but_last_texture(
 	std::vector<std::pair<Texture2D, Texture2D>> tex_buf)
 {
 	for (auto it = tex_buf.begin(); it != tex_buf.end()-1; ++it) {
@@ -194,7 +194,7 @@ void unloadAllButLastTexture(
 }
 
 //copied+edited from Gnu getopt manual (https://www.gnu.org/software/libc/manual/html_node/Getopt-Long-Option-Example.html#Getopt-Long-Option-Example)
-void processArgs(int argc, char* argv[]) {
+void process_args(int argc, char* argv[]) {
 	struct option long_options[] = {
 		/* These options don’t set a flag.
 		 We distinguish them by their indices. */
@@ -312,9 +312,10 @@ void processArgs(int argc, char* argv[]) {
 	}
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[])
+{
 	std::cout << argv[0] << " by Rei de Vries August 2021" << std::endl;
-	processArgs(argc, argv);
+	process_args(argc, argv);
 
 	//only show warning messages, not every debug message
 	SetTraceLogLevel(LOG_WARNING);
@@ -398,15 +399,15 @@ int main(int argc, char* argv[]) {
 		//batch process the texture buffer if we exceeded the maximum size
 		if (tex_buf.size() >= batch_size) {
 			if (last_saved_index == 0) last_batch_pair = tex_buf[0];
-			out_buf = processTextures(
+			out_buf = process_textures(
 				tex_buf,
 				last_batch_pair,
 				out_buf,
 				s,
 				last_saved_index
 			);
-			saveTextures(out_buf, last_saved_index);
-			unloadAllButLastTexture(tex_buf);
+			save_textures(out_buf, last_saved_index);
+			unload_all_but_last_texture(tex_buf);
 			last_batch_pair = tex_buf.back();
 			tex_buf.clear();
 			last_saved_index = index+1;
@@ -420,16 +421,16 @@ int main(int argc, char* argv[]) {
 
 	std::cout << std::endl;
 	if (last_saved_index == 0) last_batch_pair = tex_buf[0];
-	out_buf = processTextures(
+	out_buf = process_textures(
 		tex_buf,
 		last_batch_pair,
 		out_buf,
 		s,
 		last_saved_index
 	);
-	saveTextures(out_buf, last_saved_index);
+	save_textures(out_buf, last_saved_index);
 	for (auto out_tex : out_buf) UnloadImage(out_tex);
-	unloadTextures(tex_buf);
+	unload_textures(tex_buf);
 	tex_buf.clear();
 	UnloadShader(s);
 	std::cout << "done" << std::endl;
